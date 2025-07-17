@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Calories Burnt Prediction.ipynb
-
-Importing the Dependencies
 """
+Calories Burnt Prediction.ipynb
+
+Objective:
+Predict calories burnt during exercise using biometric and workout data.
+
+This script includes:
+1. Data loading and preprocessing
+2. Exploratory data analysis (EDA)
+3. Correlation analysis and visualization
+4. Model training using XGBoost Regressor
+5. Evaluation of model performance
+"""
+
+# === Importing Required Libraries ===
 
 import numpy as np
 import pandas as pd
@@ -12,24 +23,18 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from sklearn import metrics
 
-"""Data Collection & Processing"""
+# === Data Collection and Processing ===
 
-#loading data from csv file to pandas DataFrame
+# Load calorie data from CSV into a DataFrame
 calories = pd.read_csv('calories.csv')
 
-# print the first 5 rows of the dataframe
-calories.head()
-
+# Load exercise session data
 exercise_data = pd.read_csv('exercise.csv')
-# higher intensity workout = higher heart rate
 
-exercise_data.head()
 
 """Combining the two dataframes"""
 
 calories_data = pd.concat([exercise_data, calories['Calories']], axis = 1)
-
-calories_data.head()
 
 # check the size of the dataset
 calories_data.shape
@@ -40,16 +45,15 @@ calories_data.info()
 #checking for any missing values
 calories_data.isnull().sum()
 
-"""Dataset is complete and there are no missing values
+# Confirmed: no missing data in the dataset
 
-### **Data Analysis**
-"""
+""" Exploratory Data Analysis (EDA) """
 
 # get some statistical measures about the data
 calories_data.describe()
 
-"""Data Collection & Processing"""
 
+# Set seaborn theme for cleaner plots
 sns.set_theme(style="whitegrid")
 
 # plotting the gender column in count plot
@@ -67,10 +71,9 @@ sns.histplot(data = calories_data, x = 'Height', kde = True)
 sns.histplot(data = calories_data, x = 'Weight', kde = True)
 
 
-"""1. Positive Correlation
-2. Negative Correlation
-"""
+""" Correlation Analysis """
 
+# Compute correlation matrix (excluding Gender)
 correlation = calories_data.drop('Gender', axis=1).corr()
 
 # Distribution of Calories
@@ -89,10 +92,12 @@ sns.heatmap(calories_data[numerical_cols].corr(), annot=True, cmap='coolwarm', f
 plt.title('Correlation Heatmap')
 plt.show()
 
-# Scatter plot of Duration vs Calories
-plt.figure(figsize=(8, 5))
-# Revert 'Gender' column for plotting
+""" Scatter Plot: Duration vs Calories Burnt """
+
+# Convert gender from numeric to string for visualization
 calories_data['Gender'] = calories_data['Gender'].replace({0: 'male', 1: 'female'})
+
+plt.figure(figsize=(8, 5))
 sns.scatterplot(x='Duration', y='Calories', hue='Gender', data=calories_data)
 plt.title('Duration vs Calories Burnt')
 plt.xlabel('Duration (minutes)')
@@ -101,48 +106,40 @@ plt.show()
 # Convert 'Gender' back to numerical values for model training
 calories_data.replace({"Gender": {'male': 0, 'female': 1}}, inplace = True)
 
-"""Converting the text data to numeric values"""
-
+# Convert gender back to numeric for model training
 calories_data.replace({"Gender": {'male': 0, 'female': 1}}, inplace = True)
 
-"""Separating features and target"""
+""" Feature Selection """
 
 X = calories_data.drop(columns = ['User_ID', 'Calories'], axis = 1)
 Y = calories_data['Calories']
 
+# Preview features and target
 print(X)
-
 print(Y)
 
-"""Splitting data into training data and test data"""
+""" Train-Test Data Split """
 
+# Split dataset into training and testing sets (80/20)
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, random_state = 2)
 
 print(X.shape, X_train.shape, X_test.shape)
 
-"""Model Training
+""" Model Training using XGBoost Regressor """
 
-XGBoost Regressor
-"""
-
-# loading the model
+# Initialize XGBoost Regressor model
 model = XGBRegressor()
 
-# training the model with X_train
+# Train the model on the training data
 model.fit(X_train, Y_train)
 
-"""Evaluation
-
-Prediction on Test Data
-"""
+""" Model Evaluation """
 
 # Evaluating model based off Test Data
 test_data_prediction = model.predict(X_test)
 
-print(test_data_prediction)
+print("Predicted Calories:", test_data_prediction)
 
-"""Mean Absolute Error"""
-
+# Calculate Mean Absolute Error (MAE)
 mae = metrics.mean_absolute_error(Y_test, test_data_prediction)
-
 print("Mean Absolute Error = ", mae)
