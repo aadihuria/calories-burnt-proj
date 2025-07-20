@@ -11,7 +11,7 @@ This project uses biometric and workout data to **predict the number of calories
 
 ## 🛠️ Technologies Used
 
-- Python 3.11+
+- Python
 - NumPy, Pandas
 - Seaborn, Matplotlib
 - Scikit-learn
